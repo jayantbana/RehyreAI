@@ -1,381 +1,277 @@
-import React, { useState } from 'react';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  ShieldCheck, 
-  FileText, 
-  Timer, 
-  Code2, 
-  Network, 
-  Mic2, 
-  Award,
-  RefreshCw,
-  Cpu,
-  Layers,
-  ChevronRight,
-  Database,
-  Terminal,
-  Activity,
-  ArrowUpRight
-} from 'lucide-react';
+import React from 'react';
+import { ArrowRight, ShieldCheck, Scale, FileCheck2, BadgeCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Rail from '@/components/Rail.jsx';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────────────────────────────────────
+const PIPELINES = [
+  {
+    id: 'swe',
+    label: 'Software',
+    stages: [
+      { title: 'Code review', detail: 'Reads real commits, not résumé keywords.', duration: 'Automated' },
+      { title: 'Online assessment', detail: 'Timed problems with strict limits.', duration: '45 min' },
+      { title: 'Live coding', detail: 'Sandboxed execution against hidden tests.', duration: '30 min' },
+      { title: 'System design', detail: 'Whiteboard trade-offs, explained aloud.', duration: '30 min' },
+      { title: 'Technical debrief', detail: 'Adaptive voice interview on reasoning.', duration: '20 min' },
+    ],
+  },
+  {
+    id: 'data',
+    label: 'Data',
+    stages: [
+      { title: 'Portfolio review', detail: 'SQL patterns and pipeline structure.', duration: 'Automated' },
+      { title: 'Statistics', detail: 'Hypothesis testing and inference.', duration: '30 min' },
+      { title: 'Live SQL', detail: 'Window functions and query tuning.', duration: '35 min' },
+      { title: 'Case study', detail: 'Diagnose an anomaly in live data.', duration: '30 min' },
+      { title: 'Executive summary', detail: 'Explain findings in plain language.', duration: '20 min' },
+    ],
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud & SRE',
+    stages: [
+      { title: 'Infrastructure review', detail: 'Terraform, Helm and IAM policies.', duration: 'Automated' },
+      { title: 'Linux sandbox', detail: 'Find bottlenecks and memory leaks.', duration: '30 min' },
+      { title: 'Cluster debugging', detail: 'Fix a failing Kubernetes service.', duration: '30 min' },
+      { title: 'Failover design', detail: 'Plan a zero-downtime architecture.', duration: '30 min' },
+      { title: 'Incident review', detail: 'Walk through a post-mortem.', duration: '20 min' },
+    ],
+  },
+];
+
+const PRINCIPLES = [
+  { icon: ShieldCheck, title: 'Sandboxed execution', detail: 'Code runs in isolated environments.' },
+  { icon: Scale, title: 'Explainable decisions', detail: 'Every outcome cites its evidence.' },
+  { icon: FileCheck2, title: 'Verifiable records', detail: 'Scorecards are signed and auditable.' },
+];
+
+const PREVIEW_METERS = [
+  { label: 'Problem solving', value: 92 },
+  { label: 'System design', value: 81 },
+  { label: 'Communication', value: 85 },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
 export default function HomeView({ setActiveTab, onOpenStudentModal, onOpenRecruiterModal }) {
-  const [selectedRole, setSelectedRole] = useState('swe');
-  const [flywheelActiveNode, setFlywheelActiveNode] = useState('scorecard');
-
-  const rolePipelines = {
-    swe: {
-      name: "Software Engineer / Platform Lead",
-      tagline: "Algorithmic asymptotic analysis, concurrency, and multi-tier systems.",
-      nodes: [
-        { title: "Semantic Resume Screening", time: "0.8s", detail: "Validates production Git commits & distributed systems experience" },
-        { title: "Timed OA Assessment", time: "45m", detail: "Thread scheduling, OS primitives, and memory constraints" },
-        { title: "Judge0 DSA Sandbox", time: "42/42 Tests", detail: "Segment trees, DP state transitions in C++20 / Go" },
-        { title: "System Design Whiteboard", time: "Interactive", detail: "Distributed cache invalidation, sharded write topologies" },
-        { title: "Staff AI Voice Interview", time: "25m", detail: "STAR behavioral deep-dives & synchronous code review" }
-      ]
-    },
-    data: {
-      name: "Data Analyst & Analytics Engineer",
-      tagline: "Complex SQL window queries, Bayesian statistics, and business retention cases.",
-      nodes: [
-        { title: "Portfolio Model Audit", time: "1.2s", detail: "Audits dbt DAGs, BigQuery/Snowflake models & ETL pipelines" },
-        { title: "Statistical Reasoning", time: "30m", detail: "Hypothesis testing, confidence intervals & cohort analysis" },
-        { title: "SQL Execution Engine", time: "35/35 Tests", detail: "Recursive CTEs, dense ranking & temporal aggregations" },
-        { title: "Funnel Case Simulation", time: "Live Data", detail: "Diagnoses a 24% checkout dropoff across payment gateways" },
-        { title: "Stakeholder Voice Debrief", time: "20m", detail: "Explains technical insights to executive non-engineers" }
-      ]
-    },
-    devops: {
-      name: "Cloud DevOps & Site Reliability Engineer",
-      tagline: "Live terminal crash forensics, Kubernetes orchestration, and post-mortems.",
-      nodes: [
-        { title: "Infrastructure Code Screen", time: "0.9s", detail: "Parses Terraform HCL modules, Helm charts, and IAM roles" },
-        { title: "Linux Sandbox Terminal", time: "Live Bash", detail: "Isolates memory leaks and orphaned processes in containers" },
-        { title: "K8s Debugging Cluster", time: "99.8% Pass", detail: "Remediates CrashLoopBackOff & ingress TLS configuration" },
-        { title: "Fault-Tolerance Design", time: "Multi-Region", detail: "Architects zero-downtime failover with active-active DNS" },
-        { title: "Incident Retrospective Oral", time: "20m", detail: "AI Staff SRE probes containment velocity and MTTR reduction" }
-      ]
-    }
-  };
-
-  const activePipeline = rolePipelines[selectedRole];
-
   return (
-    <div className="space-y-24 py-12 md:py-20 animate-fadeIn">
-      
-      {/* 1. Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-4xl mx-auto">
-          
-          {/* Monograph Issue Label */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F4F0EA] border border-[#E6E2DA] text-[#525866] text-xs font-mono mb-8 shadow-warm-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C25E00]"></span>
-            <span>ISSUE NO. 04 • THE ARCHITECTURE OF TECHNICAL EVALUATION</span>
-          </div>
+    <>
+      {/* ── Hero ── */}
+      <section className="container grid items-center gap-12 py-16 md:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        <div className="flex flex-col items-start gap-6">
+          <Badge variant="outline" className="h-7 gap-1.5 rounded-full border-brand-300 px-3 text-sm font-semibold text-muted-foreground">
+            <BadgeCheck className="size-4" aria-hidden="true" />
+            Practice and assessment in one loop
+          </Badge>
 
-          {/* Headline in Instrument Serif */}
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-[#1C1E21] leading-[1.05] tracking-tight">
-            From Preparation to Hiring.{' '}
-            <span className="italic font-serif text-[#1E3A8A] block sm:inline">
-              One Complete Loop.
-            </span>
-          </h1>
+          <h1 className="text-5xl">Technical hiring, verified at every step.</h1>
 
-          {/* Subheadline in Plus Jakarta Sans */}
-          <p className="mt-8 text-lg sm:text-xl text-[#525866] font-normal leading-relaxed max-w-3xl mx-auto">
-            The AI-powered technical hiring ecosystem. Candidates practice realistic company loops; recruiters gain automated, explainable screening with <span className="text-[#1C1E21] font-semibold">zero engineering hours wasted</span>.
+          <p className="max-w-[46ch] text-lg text-muted-foreground">
+            Candidates practise realistic interview loops. Employers receive explainable scorecards backed by evidence.
           </p>
 
-          {/* Dual CTAs */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={onOpenStudentModal}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-semibold text-white bg-[#1E3A8A] hover:bg-[#172554] shadow-warm-md hover:shadow-warm-lg transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
-            >
-              <span>Practice Free Mock Loop</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={onOpenRecruiterModal}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-semibold text-[#1C1E21] bg-white hover:bg-[#F4F0EA] border border-[#E6E2DA] shadow-warm-sm transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
-            >
-              <span>Request Campus / B2B Demo</span>
-              <ArrowUpRight className="w-4 h-4 text-[#525866]" />
-            </button>
+          <div className="flex w-full flex-col gap-3 pt-2 sm:w-auto sm:flex-row">
+            <Button size="lg" onClick={onOpenStudentModal}>
+              Start practising
+              <ArrowRight aria-hidden="true" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={onOpenRecruiterModal}>
+              Book a demo
+            </Button>
           </div>
-
-          {/* Editorial Trust Figures */}
-          <div className="mt-16 pt-10 border-t border-[#E6E2DA] grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="font-serif text-3xl sm:text-4xl text-[#1C1E21]">140,000+</div>
-              <div className="text-xs text-[#525866] uppercase font-mono tracking-wider mt-1">Full Mock Loops Run</div>
-            </div>
-            <div className="text-center">
-              <div className="font-serif text-3xl sm:text-4xl text-[#0D5C3A]">94.8%</div>
-              <div className="text-xs text-[#525866] uppercase font-mono tracking-wider mt-1">Recruiter Correlation</div>
-            </div>
-            <div className="text-center">
-              <div className="font-serif text-3xl sm:text-4xl text-[#1E3A8A]">38 Hours</div>
-              <div className="text-xs text-[#525866] uppercase font-mono tracking-wider mt-1">Saved Per Successful Hire</div>
-            </div>
-            <div className="text-center">
-              <div className="font-serif text-3xl sm:text-4xl text-[#C25E00]">40+ Langs</div>
-              <div className="text-xs text-[#525866] uppercase font-mono tracking-wider mt-1">Isolated Sandbox Environments</div>
-            </div>
-          </div>
-
         </div>
+
+        <ScorecardPreview onClick={() => setActiveTab('scorecard')} />
       </section>
 
-      {/* 2. Interactive SVG Visual: "The Ecosystem Flywheel" */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-[#E6E2DA] p-8 sm:p-12 shadow-warm-md">
-          
-          <div className="max-w-2xl mx-auto text-center mb-10">
-            <span className="text-xs font-mono uppercase tracking-widest text-[#C25E00] font-bold">
-              The Architectural Blueprint
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1E21] mt-2">
-              The Ecosystem Flywheel
-            </h2>
-            <p className="text-sm text-[#525866] mt-2 leading-relaxed">
-              Candidate preparation directly feeds verified talent pipelines. Recruiter hiring criteria directly shapes realistic practice rubrics.
-            </p>
-          </div>
-
-          {/* Custom Inline SVG Vector Diagram */}
-          <div className="relative max-w-4xl mx-auto bg-[#FAFAF7] rounded-2xl border border-[#E6E2DA] p-6 sm:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              
-              {/* Left Wing: Candidate Preparation */}
-              <div 
-                onClick={() => setFlywheelActiveNode('candidate')}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                  flywheelActiveNode === 'candidate'
-                    ? 'bg-white border-[#1E3A8A] shadow-warm-md ring-1 ring-[#1E3A8A]'
-                    : 'bg-white/80 border-[#E6E2DA] hover:bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-[#F4F0EA] text-[#1E3A8A] font-bold">
-                    SIDE A • ASPIRANTS
-                  </span>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#1E3A8A]"></div>
-                </div>
-                <h3 className="font-serif text-2xl text-[#1C1E21] font-normal mb-1">Rehyre Prepare</h3>
-                <p className="text-xs text-[#525866] leading-relaxed mb-4">
-                  Candidates train across realistic timed OAs, Judge0 compilers, and Staff Engineer voice interviews.
-                </p>
-                <ul className="text-xs space-y-1.5 text-[#1C1E21] font-medium">
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>Timed OA Assessments</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>Judge0 Algorithmic Compilers</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>AI Voice & System Design Canvas</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Center Hub: Cryptographic Verified Scorecard */}
-              <div 
-                onClick={() => setFlywheelActiveNode('scorecard')}
-                className={`p-6 rounded-2xl border text-center transition-all cursor-pointer ${
-                  flywheelActiveNode === 'scorecard'
-                    ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-warm-lg scale-105'
-                    : 'bg-[#1C1E21] text-white border-[#1C1E21] hover:bg-[#1E3A8A]'
-                }`}
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 mx-auto flex items-center justify-center mb-3">
-                  <Award className="w-6 h-6 text-[#FAFAF7]" />
-                </div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#F4F0EA] bg-white/10 px-2 py-0.5 rounded-full">
-                  THE VERIFICATION CORE
-                </span>
-                <h4 className="font-serif text-2xl text-white font-normal mt-2 mb-1">
-                  Verified Readiness Scorecard
-                </h4>
-                <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                  Tamper-proof SHA-256 evidence certificate proving genuine execution proficiency.
-                </p>
-                <div className="inline-flex items-center gap-1.5 text-xs font-mono text-[#FAFAF7] bg-white/10 px-3 py-1.5 rounded-lg">
-                  <ShieldCheck className="w-4 h-4 text-[#0D5C3A]" />
-                  <span>Audit Code: 0x7f4a...9b12</span>
-                </div>
-              </div>
-
-              {/* Right Wing: Enterprise Screening */}
-              <div 
-                onClick={() => setFlywheelActiveNode('enterprise')}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                  flywheelActiveNode === 'enterprise'
-                    ? 'bg-white border-[#C25E00] shadow-warm-md ring-1 ring-[#C25E00]'
-                    : 'bg-white/80 border-[#E6E2DA] hover:bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-[#F4F0EA] text-[#C25E00] font-bold">
-                    SIDE B • EMPLOYERS
-                  </span>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#C25E00]"></div>
-                </div>
-                <h3 className="font-serif text-2xl text-[#1C1E21] font-normal mb-1">Rehyre Screen</h3>
-                <p className="text-xs text-[#525866] leading-relaxed mb-4">
-                  Recruiters convert JDs into pipelines, evaluate 50k candidates, and read clear rejection reasons.
-                </p>
-                <ul className="text-xs space-y-1.5 text-[#1C1E21] font-medium">
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>Assessment-as-a-Service (JD to Loop)</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>Explainable AI Reason Codes</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                    <span>Turnkey Campus Drive Automation</span>
-                  </li>
-                </ul>
-              </div>
-
-            </div>
-
-            {/* Bottom Flywheel Caption */}
-            <div className="mt-8 pt-6 border-t border-[#E6E2DA] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#525866]">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#0D5C3A]"></span>
-                <span>Active Flywheel Connection: Prepare ⇄ Scorecard ⇄ Screen</span>
-              </div>
-              <button 
-                onClick={() => setActiveTab('scorecard')}
-                className="text-[#1E3A8A] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>Inspect an authentic Verified Scorecard</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 3. Interactive Pipeline Preview Widget */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#F4F0EA] rounded-3xl border border-[#E6E2DA] p-8 sm:p-12">
-          
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-10 pb-6 border-b border-[#E6E2DA]">
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-bold">
-                DYNAMIC PIPELINE TOPOLOGY
+      {/* ── Principles ── */}
+      <section aria-label="Principles" className="border-y bg-card/60">
+        <div className="container grid gap-8 py-10 sm:grid-cols-3 sm:gap-6">
+          {PRINCIPLES.map(({ icon: Icon, title, detail }) => (
+            <div key={title} className="flex items-start gap-3.5">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground">
+                <Icon className="size-5" aria-hidden="true" />
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1E21] mt-2">
-                Componentized Hiring Pipelines
-              </h2>
-              <p className="text-sm text-[#525866] mt-1 max-w-xl">
-                Roles shouldn't share generic multiple-choice tests. Rehyre compiles specific assessment modules calibrated to real day-one responsibilities.
-              </p>
+              <div className="flex flex-col gap-0.5">
+                <h2 className="font-sans text-base font-semibold tracking-normal">{title}</h2>
+                <p className="text-sm text-muted-foreground">{detail}</p>
+              </div>
             </div>
-
-            {/* Role Selectors */}
-            <div className="flex items-center gap-2 p-1 bg-white rounded-xl border border-[#E6E2DA] shadow-warm-sm">
-              <button
-                onClick={() => setSelectedRole('swe')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  selectedRole === 'swe'
-                    ? 'bg-[#1E3A8A] text-white shadow-warm-sm'
-                    : 'text-[#525866] hover:text-[#1C1E21]'
-                }`}
-              >
-                Software Engineer
-              </button>
-              <button
-                onClick={() => setSelectedRole('data')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  selectedRole === 'data'
-                    ? 'bg-[#1E3A8A] text-white shadow-warm-sm'
-                    : 'text-[#525866] hover:text-[#1C1E21]'
-                }`}
-              >
-                Data Analyst
-              </button>
-              <button
-                onClick={() => setSelectedRole('devops')}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  selectedRole === 'devops'
-                    ? 'bg-[#1E3A8A] text-white shadow-warm-sm'
-                    : 'text-[#525866] hover:text-[#1C1E21]'
-                }`}
-              >
-                Cloud / DevOps
-              </button>
-            </div>
-          </div>
-
-          {/* Sequential Stage Vector Blocks */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs font-mono text-[#525866]">
-              <span>CALIBRATED FOR: <strong className="text-[#1C1E21]">{activePipeline.name}</strong></span>
-              <span>{activePipeline.nodes.length} SEQUENCED NODES</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {activePipeline.nodes.map((node, idx) => (
-                <div 
-                  key={idx}
-                  className="bg-white rounded-2xl p-5 border border-[#E6E2DA] shadow-warm-sm hover:shadow-warm-md hover:border-[#1E3A8A]/40 transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F4F0EA] text-[#525866]">
-                        Stage 0{idx + 1}
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-[#0D5C3A]">
-                        {node.time}
-                      </span>
-                    </div>
-                    <h4 className="font-serif text-lg text-[#1C1E21] font-normal mb-1.5 leading-snug">
-                      {node.title}
-                    </h4>
-                    <p className="text-xs text-[#525866] leading-relaxed">
-                      {node.detail}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-[#E6E2DA] flex items-center justify-between text-[11px] font-mono text-[#1E3A8A]">
-                    <span>Standardized Bar</span>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0D5C3A]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Call to Action Banner */}
-          <div className="mt-10 pt-6 border-t border-[#E6E2DA] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-[#525866]">
-              Looking to deploy this pipeline across 5,000 campus graduates?
-            </div>
-            <button
-              onClick={() => setActiveTab('enterprise')}
-              className="px-5 py-2.5 rounded-lg text-xs font-semibold text-[#1E3A8A] bg-white border border-[#E6E2DA] hover:bg-[#FAFAF7] shadow-warm-sm transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>Explore Enterprise Capabilities</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
+          ))}
         </div>
       </section>
 
-    </div>
+      {/* ── Assessment stages ── */}
+      <section className="container flex flex-col gap-10 py-20 md:py-28">
+        <Tabs defaultValue="swe" className="flex flex-col gap-8">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div className="flex flex-col gap-3">
+              <p className="eyebrow">How assessment works</p>
+              <h2 className="text-4xl">Five stages, one consistent standard.</h2>
+            </div>
+            <TabsList className="self-start md:self-auto">
+              {PIPELINES.map((p) => (
+                <TabsTrigger key={p.id} value={p.id}>{p.label}</TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {PIPELINES.map((p) => (
+            <TabsContent key={p.id} value={p.id} className="mt-0">
+              <Rail label={`${p.label} assessment stages`}>
+                {p.stages.map((s, i) => (
+                  <Card key={s.title} className="flex w-[78%] flex-col justify-between sm:w-[17.5rem]">
+                    <CardHeader className="gap-3 pb-4">
+                      <span className="font-serif text-3xl font-normal leading-none text-brand-500 tabular">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <CardTitle>{s.title}</CardTitle>
+                      <CardDescription className="text-sm">{s.detail}</CardDescription>
+                    </CardHeader>
+                    <CardFooter className="flex flex-col items-stretch gap-3">
+                      <Separator />
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Duration</span>
+                        <span className="font-semibold tabular">{s.duration}</span>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </Rail>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </section>
+
+      {/* ── Audiences ── */}
+      <section className="container grid gap-6 pb-20 md:grid-cols-2 md:pb-28">
+        <AudienceCard
+          eyebrow="For candidates"
+          title="Practise the real interview."
+          body="Timed assessments, live coding and AI-led debriefs, with feedback you can act on."
+          cta="Explore practice"
+          onClick={() => setActiveTab('prepare')}
+        />
+        <AudienceCard
+          eyebrow="For employers"
+          title="Screen with confidence."
+          body="Role-specific assessments with clear, auditable reasoning behind every decision."
+          cta="Explore for teams"
+          onClick={() => setActiveTab('enterprise')}
+        />
+      </section>
+
+      {/* ── Closing call to action ── */}
+      <section className="container pb-20 md:pb-28">
+        <div className="flex flex-col items-start justify-between gap-8 rounded-2xl bg-primary px-6 py-12 text-primary-foreground sm:px-10 md:flex-row md:items-center md:px-14 md:py-16">
+          <div className="flex max-w-xl flex-col gap-3">
+            <h2 className="text-3xl text-primary-foreground">See what a verified scorecard looks like.</h2>
+            <p className="text-brand-300">Scores, evidence and reasoning on a single page.</p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button size="lg" variant="secondary" onClick={() => setActiveTab('scorecard')}>
+              View sample
+              <ArrowRight aria-hidden="true" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-brand-700 text-primary-foreground hover:bg-brand-700 hover:text-primary-foreground"
+              onClick={onOpenRecruiterModal}
+            >
+              Book a demo
+            </Button>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pieces
+// ─────────────────────────────────────────────────────────────────────────────
+function AudienceCard({ eyebrow, title, body, cta, onClick }) {
+  return (
+    <Card className="flex flex-col justify-between">
+      <CardHeader className="gap-3 p-8 pb-6">
+        <p className="eyebrow">{eyebrow}</p>
+        <CardTitle className="text-2xl">{title}</CardTitle>
+        <CardDescription className="max-w-[42ch]">{body}</CardDescription>
+      </CardHeader>
+      <CardFooter className="p-8 pt-0">
+        <Button variant="link" className="h-auto px-0 text-base" onClick={onClick}>
+          {cta}
+          <ArrowRight aria-hidden="true" />
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function ScorecardPreview({ onClick }) {
+  const score = 88;
+  const r = 34;
+  const c = 2 * Math.PI * r;
+
+  return (
+    <Card className="relative mx-auto w-full max-w-md shadow-[0_24px_48px_-24px_hsl(var(--brand-900)/0.25)]">
+      <CardHeader className="flex-row items-center justify-between gap-4 space-y-0 p-6 pb-5">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm text-muted-foreground">Readiness scorecard</p>
+          <CardTitle className="text-xl">Arjun Sharma</CardTitle>
+          <p className="text-sm text-muted-foreground">Backend Engineer</p>
+        </div>
+        <div className="relative size-20 shrink-0">
+          <svg viewBox="0 0 80 80" className="size-full -rotate-90" aria-hidden="true">
+            <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(var(--brand-200))" strokeWidth="6" />
+            <circle
+              cx="40" cy="40" r={r} fill="none" stroke="hsl(var(--brand-900))" strokeWidth="6"
+              strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (score / 100) * c}
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center font-serif text-2xl font-medium tabular">
+            {score}
+          </span>
+          <span className="sr-only">Score {score} out of 100</span>
+        </div>
+      </CardHeader>
+
+      <Separator />
+
+      <CardContent className="flex flex-col gap-4 p-6">
+        {PREVIEW_METERS.map((m) => (
+          <div key={m.label} className="flex flex-col gap-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>{m.label}</span>
+              <span className="font-semibold tabular">{m.value}</span>
+            </div>
+            <Progress value={m.value} aria-label={m.label} />
+          </div>
+        ))}
+      </CardContent>
+
+      <Separator />
+
+      <CardFooter className="justify-between gap-4 p-6 py-4">
+        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <ShieldCheck className="size-4" aria-hidden="true" />
+          Signed record
+        </span>
+        <Button variant="ghost" size="sm" onClick={onClick}>
+          Open
+          <ArrowRight aria-hidden="true" />
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

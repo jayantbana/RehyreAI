@@ -2,58 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────
+   DESIGN TOKENS
+   Brand palette (HSL triplets for shadcn/ui):
+     900 #3E3239  ink / primary
+     700 #6B5560  secondary text (5.9:1 on 50)
+     500 #9E8189  icons, borders, large text only (3.1:1)
+     300 #C7A9A3  muted text on dark surfaces (5.6:1 on 900)
+     200 #E8D2C4  hairlines, soft fills
+      50 #F7EFE7  page background
+───────────────────────────────────────── */
 @layer base {
+  :root {
+    --brand-900: 325 10.7% 22%;
+    --brand-700: 330 11.5% 37.6%;
+    --brand-500: 343.4 13% 56.3%;
+    --brand-300: 10 24.3% 71%;
+    --brand-200: 23.3 43.9% 83.9%;
+    --brand-50: 30 50% 93.7%;
+
+    --background: var(--brand-50);
+    --foreground: var(--brand-900);
+
+    --card: 30 50% 96.9%;
+    --card-foreground: var(--brand-900);
+    --popover: 30 50% 96.9%;
+    --popover-foreground: var(--brand-900);
+
+    --primary: var(--brand-900);
+    --primary-foreground: var(--brand-50);
+
+    --secondary: var(--brand-200);
+    --secondary-foreground: var(--brand-900);
+
+    --muted: 24.4 47.4% 88.8%;
+    --muted-foreground: var(--brand-700);
+
+    --accent: var(--brand-200);
+    --accent-foreground: var(--brand-900);
+
+    --destructive: 0 55% 42%;
+    --destructive-foreground: var(--brand-50);
+
+    --border: var(--brand-200);
+    --input: var(--brand-500);
+    --ring: var(--brand-700);
+
+    --radius: 0.625rem;
+
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    background-color: #FAFAF7;
-    color: #1C1E21;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    @apply bg-background text-foreground font-sans antialiased;
+    overflow-x: clip;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: "kern", "liga";
+    text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, .font-serif {
-    font-family: 'Instrument Serif', Georgia, serif;
-    letter-spacing: -0.02em;
+  /* Type to read: headings set in Newsreader, tight leading, balanced lines */
+  h1, h2, h3, h4 {
+    @apply font-serif text-foreground;
+    font-weight: 500;
+    font-optical-sizing: auto;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: hsl(var(--brand-200));
+    color: hsl(var(--brand-900));
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Numbers line up in scorecards and calculators */
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
   }
 }
 
-/* Subtle Editorial Linework & Accents */
-.border-warm {
-  border-color: #E6E2DA;
+@layer components {
+  /* Small label above a heading — sentence case, never tracked caps */
+  .eyebrow {
+    @apply text-sm font-semibold text-muted-foreground;
+  }
+
+  /* Horizontally scrollable rail with snap points.
+     The rail scrolls inside its own box, so the page never scrolls sideways. */
+  .rail {
+    @apply flex gap-4 overflow-x-auto overscroll-x-contain pb-3;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--brand-300)) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rail > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  .rail::-webkit-scrollbar {
+    height: 6px;
+  }
+  .rail::-webkit-scrollbar-thumb {
+    background: hsl(var(--brand-300));
+    border-radius: 999px;
+  }
+  .rail::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
-.bg-warm-ivory {
-  background-color: #FAFAF7;
+@layer utilities {
+  .animate-enter {
+    animation: page-enter 0.4s var(--ease-out) both;
+  }
+
+  @keyframes page-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
-.bg-warm-sand {
-  background-color: #F4F0EA;
-}
-
-.bg-warm-porcelain {
-  background-color: #FFFFFF;
-}
-
-/* Editorial Paper Texture Accent */
-.editorial-grid {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(230, 226, 218, 0.4) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(230, 226, 218, 0.4) 1px, transparent 1px);
-}
-
-/* Warm Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #FAFAF7;
-}
-::-webkit-scrollbar-thumb {
-  background: #E6E2DA;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #D5CEBE;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -27,24 +27,19 @@ export default function App() {
     setModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
   return (
-    <div className="min-h-screen bg-[#FAFAF7] text-[#1C1E21] flex flex-col font-sans selection:bg-[#1E3A8A]/15 selection:text-[#1E3A8A]">
-      {/* 1. Glassmorphic Warm Ivory Navigation */}
-      <WarmNavbar 
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <WarmNavbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenStudentModal={handleOpenStudentModal}
         onOpenRecruiterModal={handleOpenRecruiterModal}
       />
 
-      {/* 2. Multi-Page Active View Layout */}
-      <main className="flex-1">
+      {/* key re-runs the entrance animation on each view change */}
+      <main key={activeTab} className="flex-1 animate-enter">
         {activeTab === 'home' && (
-          <HomeView 
+          <HomeView
             setActiveTab={setActiveTab}
             onOpenStudentModal={handleOpenStudentModal}
             onOpenRecruiterModal={handleOpenRecruiterModal}
@@ -52,15 +47,11 @@ export default function App() {
         )}
 
         {activeTab === 'prepare' && (
-          <PrepareView 
-            onOpenStudentModal={handleOpenStudentModal}
-          />
+          <PrepareView onOpenStudentModal={handleOpenStudentModal} />
         )}
 
         {activeTab === 'enterprise' && (
-          <EnterpriseView 
-            onOpenRecruiterModal={handleOpenRecruiterModal}
-          />
+          <EnterpriseView onOpenRecruiterModal={handleOpenRecruiterModal} />
         )}
 
         {activeTab === 'scorecard' && (
@@ -68,18 +59,16 @@ export default function App() {
         )}
       </main>
 
-      {/* 3. Minimalist Warm Editorial Footer */}
-      <WarmFooter 
+      <WarmFooter
         setActiveTab={setActiveTab}
         onOpenStudentModal={handleOpenStudentModal}
         onOpenRecruiterModal={handleOpenRecruiterModal}
       />
 
-      {/* 4. Interactive Modal (Student Mock Loop & Recruiter Demo) */}
-      <WarmDemoModal 
-        isOpen={modalOpen}
+      <WarmDemoModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
         mode={modalMode}
-        onClose={handleCloseModal}
       />
     </div>
   );
