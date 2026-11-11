@@ -43,7 +43,7 @@ const COHORTS = [
   { id: '10000+', label: '10,000 +' },
 ];
 
-export default function WarmDemoModal({ open, onOpenChange, mode }) {
+export default function WarmDemoModal({ open, onOpenChange, mode, onStudentStart }) {
   // Student state
   const [track, setTrack] = useState('swe');
   const [lang, setLang] = useState('cpp');
@@ -76,7 +76,14 @@ export default function WarmDemoModal({ open, onOpenChange, mode }) {
             />
           ) : (
             <form
-              onSubmit={(e) => { e.preventDefault(); setStudentDone(true); }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                setStudentDone(true);
+                // Fire immediately so App.jsx can launch the student sub-view
+                const trackLabel = TRACKS.find((t) => t.id === track)?.label ?? track;
+                const langLabel = LANGUAGES.find((l) => l.id === lang)?.label ?? lang;
+                onStudentStart?.(trackLabel, langLabel);
+              }}
               className="flex flex-col gap-6"
             >
               <DialogHeader className="gap-2 pr-8 text-left">
